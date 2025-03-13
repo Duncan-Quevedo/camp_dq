@@ -27,6 +27,10 @@
 #define JAC_GAS 0
 #define JAC_AERO 1
 
+// Aerosol mass concentration types
+#define PER_PARTICLE_MASS 0
+#define TOTAL_PARTICLE_MASS 1
+
 #define DELTA_H_ float_data[0]
 #define DELTA_S_ float_data[1]
 #define DIFF_COEFF_ float_data[2]
