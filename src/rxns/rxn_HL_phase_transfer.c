@@ -319,22 +319,40 @@ void rxn_HL_phase_transfer_calc_deriv_contrib(
     // Calculate the evaporation and condensation rates (ppm/s)
     cond_rate *= state[GAS_SPEC_];
     evap_rate *= state[AERO_SPEC_(i_phase)] / state[AERO_WATER_(i_phase)];
+    if (aero_conc_type == PER_PARTICLE_MASS) {
+        // Change in the gas-phase is evaporation - condensation (ppm/s)
+        if (DERIV_ID_(0) >= 0) {
+          time_derivative_add_value(time_deriv, DERIV_ID_(0),
+                                    number_conc * evap_rate);
+          time_derivative_add_value(time_deriv, DERIV_ID_(0),
+                                    -number_conc * cond_rate);
+        }
+    
+        // Change in the aerosol-phase species is condensation - evaporation
+        // (kg/m^3/s)
+        if (DERIV_ID_(1 + i_phase) >= 0) {
+          time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
+                                    -evap_rate / KGM3_TO_PPM_);
+          time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
+                                    cond_rate / KGM3_TO_PPM_);
+        }
+    } else {
+      // Change in the gas-phase is evaporation - condensation (ppm/s)
+      if (DERIV_ID_(0) >= 0) {
+        time_derivative_add_value(time_deriv, DERIV_ID_(0),
+                                  number_conc * evap_rate);
+        time_derivative_add_value(time_deriv, DERIV_ID_(0),
+                                  -number_conc * cond_rate);
+      }
 
-    // Change in the gas-phase is evaporation - condensation (ppm/s)
-    if (DERIV_ID_(0) >= 0) {
-      time_derivative_add_value(time_deriv, DERIV_ID_(0),
-                                number_conc * evap_rate);
-      time_derivative_add_value(time_deriv, DERIV_ID_(0),
-                                -number_conc * cond_rate);
-    }
-
-    // Change in the aerosol-phase species is condensation - evaporation
-    // (kg/m^3/s)
-    if (DERIV_ID_(1 + i_phase) >= 0) {
-      time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
-                                -evap_rate / KGM3_TO_PPM_);
-      time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
-                                cond_rate / KGM3_TO_PPM_);
+      // Change in the aerosol-phase species is condensation - evaporation
+      // (kg/m^3/s)
+      if (DERIV_ID_(1 + i_phase) >= 0) {
+        time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
+                                  -number_conc * evap_rate / KGM3_TO_PPM_);
+        time_derivative_add_value(time_deriv, DERIV_ID_(1 + i_phase),
+                                  number_conc * cond_rate / KGM3_TO_PPM_);
+      }
     }
   }
   return;
